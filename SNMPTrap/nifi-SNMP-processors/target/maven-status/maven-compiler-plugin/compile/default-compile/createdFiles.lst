@@ -1,0 +1,6 @@
+rocks/nifi/processors/SNMP/SNMPUtils$1.class
+rocks/nifi/processors/SNMP/SNMPUtils.class
+rocks/nifi/processors/SNMP/AbstractSNMPProcessor.class
+rocks/nifi/processors/SNMP/TrapSNMP.class
+rocks/nifi/processors/SNMP/SNMPTrapper.class
+rocks/nifi/processors/SNMP/SNMPWorker.class
