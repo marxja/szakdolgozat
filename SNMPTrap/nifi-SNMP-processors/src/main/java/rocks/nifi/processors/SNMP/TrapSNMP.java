@@ -17,6 +17,8 @@
 package rocks.nifi.processors.SNMP;
 
 import java.io.IOException;
+import java.lang.Exception;
+import java.lang.NullPointerException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
@@ -35,14 +38,21 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
+import org.apache.nifi.processor.AbstractProcessor;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.AbstractTarget;
+import org.snmp4j.TransportMapping;
 import org.snmp4j.ScopedPDU;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.AbstractVariable;
+import org.snmp4j.transport.DefaultUdpTransportMapping;
+import org.snmp4j.CommunityTarget;
+import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.smi.AssignableFromInteger;
+import org.snmp4j.PDUv1;
 import org.snmp4j.smi.AssignableFromLong;
 import org.snmp4j.smi.AssignableFromString;
 import org.snmp4j.smi.OID;
@@ -52,14 +62,57 @@ import org.snmp4j.smi.VariableBinding;
 
 @Tags({"example"})
 @CapabilityDescription("Provide a description")
-public class TrapSNMP extends AbstractSNMPProcessor<SNMPTrapper> {
+public class TrapSNMP extends AbstractProcessor {
 
-    public static final PropertyDescriptor OID = new PropertyDescriptor.Builder()
-            .name("snmp-oid")
-            .displayName("OID")
-            .description("The OID to request")
+    /** property to define host of the SNMP manager */
+    public static final PropertyDescriptor HOST = new PropertyDescriptor.Builder()
+            .name("snmp-hostname")
+            .displayName("Host Name")
+            .description("Network address of SNMP Manager (e.g., localhost)")
             .required(true)
-            .addValidator(SNMPUtils.SNMP_OID_VALIDATOR)
+            .defaultValue("localhost")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    /** property to define port of the SNMP manager */
+    public static final PropertyDescriptor PORT = new PropertyDescriptor.Builder()
+            .name("snmp-port")
+            .displayName("Port")
+            .description("Numeric value identifying Port of SNMP Manager (e.g., 162)")
+            .required(true)
+            .defaultValue("162")
+            .addValidator(StandardValidators.PORT_VALIDATOR)
+            .build();
+
+    /** property to define SNMP version to use */
+    public static final PropertyDescriptor SNMP_VERSION = new PropertyDescriptor.Builder()
+            .name("snmp-version")
+            .displayName("SNMP Version")
+            .description("SNMP Version to use")
+            .required(true)
+            .allowableValues("SNMPv1", "SNMPv2c", "SNMPv3")
+            .defaultValue("SNMPv1")
+            .build();
+
+
+    /** property to define the number of SNMP retries when requesting the SNMP Agent */
+    public static final PropertyDescriptor SNMP_RETRIES = new PropertyDescriptor.Builder()
+            .name("snmp-retries")
+            .displayName("Number of retries")
+            .description("Set the number of retries when requesting the SNMP Manager")
+            .required(true)
+            .defaultValue("0")
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .build();
+
+    /** property to define the timeout when requesting the SNMP Agent */
+    public static final PropertyDescriptor SNMP_TIMEOUT = new PropertyDescriptor.Builder()
+            .name("snmp-timeout")
+            .displayName("Timeout (ms)")
+            .description("Set the timeout (in milliseconds) when requesting the SNMP Manager")
+            .required(true)
+            .defaultValue("5000")
+            .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .build();
 
     /** relationship for success */
@@ -79,13 +132,23 @@ public class TrapSNMP extends AbstractSNMPProcessor<SNMPTrapper> {
     /** list of relationships */
     private final static Set<Relationship> relationships;
 
+
+    public final static Pattern OID_PATTERN = Pattern.compile("[[0-9]+\\.]*");
+
+    /** SNMP */
+    protected volatile Snmp snmp;
+
     /*
      * Will ensure that the list of property descriptors is build only once.
      * Will also create a Set of relationships
      */
     static {
         List<PropertyDescriptor> _propertyDescriptors = new ArrayList<>();
-        _propertyDescriptors.addAll(descriptors);
+        _propertyDescriptors.add(HOST);
+        _propertyDescriptors.add(PORT);
+        _propertyDescriptors.add(SNMP_VERSION);
+        _propertyDescriptors.add(SNMP_RETRIES);
+        _propertyDescriptors.add(SNMP_TIMEOUT);
         propertyDescriptors = Collections.unmodifiableList(_propertyDescriptors);
 
         Set<Relationship> _relationships = new HashSet<>();
@@ -98,39 +161,85 @@ public class TrapSNMP extends AbstractSNMPProcessor<SNMPTrapper> {
      * @see org.apache.nifi.snmp.processors.AbstractSNMPProcessor#onTriggerSnmp(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
      */
     @Override
-    protected void onTriggerSnmp(ProcessContext context, ProcessSession processSession) throws ProcessException {
+    public void onTrigger(ProcessContext context, ProcessSession processSession) throws ProcessException {
         FlowFile flowFile = processSession.get();
         if (flowFile != null) {
+            String snmpVersion = context.getProperty(SNMP_VERSION).getValue();
+            int version=0;
+            switch (snmpVersion) {
+                case "SNMPv2c":
+                    version = SnmpConstants.version2c;
+                    break;
+                case "SNMPv3":
+                    version = SnmpConstants.version3;
+                    break;
+                case "SNMPv1":
+                default:
+                    version = SnmpConstants.version1;
+                    break;
+            }
+            
             // Create the PDU object
+	    
             PDU pdu = null;
-            if(this.snmpTarget.getVersion() == SnmpConstants.version3) {
+            if(version == SnmpConstants.version3) {
                 pdu = new ScopedPDU();
             } else {
                 pdu = new PDU();
             }
-            if(this.addVariables(pdu, flowFile.getAttributes())) {
-                if(this.snmpTarget.getVersion() == SnmpConstants.version1) {
+	        if(this.addVariables(pdu, flowFile.getAttributes())) {
+                if(version == SnmpConstants.version1) {
                     pdu.setType(PDU.V1TRAP);
                 }
                 else {
                     pdu.setType(PDU.TRAP);
                 }
-                try {
-                    this.targetResource.trap(pdu);
-                } catch (IOException e) {
-                    processSession.transfer(processSession.penalize(flowFile), REL_FAILURE);
-                    this.getLogger().error("Failed while executing SNMP Trap via " + this.targetResource, e);
-                    context.yield();
-                    return;
-                }
-            } else {
+
+	        } else {
+	            processSession.transfer(processSession.penalize(flowFile), REL_FAILURE);
+	            this.getLogger().warn("No attributes found in the FlowFile to perform SNMP Trap");
+	            return;
+	        }
+			
+	        try {
+	            TransportMapping transport = new DefaultUdpTransportMapping();
+	            /*snmp.addTransportMapping(transport);*/
+	        } catch (IOException e) {
+	            this.getLogger().error("socket binding fails" + this, e);
+	            processSession.transfer(processSession.penalize(flowFile), REL_FAILURE);
+	            throw new ProcessException(e);
+	        }
+			
+		    //Create target
+			CommunityTarget comtarget = new CommunityTarget();	
+			comtarget.setVersion(version);
+			comtarget.setAddress(new UdpAddress(context.getProperty(HOST).getValue() + "/" + context.getProperty(PORT).getValue()));
+			comtarget.setRetries(context.getProperty(SNMP_RETRIES).asInteger());
+			comtarget.setTimeout(context.getProperty(SNMP_TIMEOUT).asInteger());
+	        
+	        
+    
+            //Send
+            try {
+                /*if(version == SnmpConstants.version1) {
+                    this.snmp.trap((PDUv1)pdu, comtarget);
+                }    
+                else {    
+                    this.snmp.notify(pdu, comtarget);
+                }*/
+                snmp.send(pdu, comtarget);
+            } catch (IOException e) {
+                this.getLogger().error("Failed to trap" + this, e);
                 processSession.transfer(processSession.penalize(flowFile), REL_FAILURE);
-                this.getLogger().warn("No attributes found in the FlowFile to perform SNMP Trap");
-                return;
+                throw new ProcessException(e);
             }
+			
             processSession.transfer(flowFile, REL_SUCCESS);
         }
     }
+
+
+
 
     /**
      * Method to construct {@link VariableBinding} based on {@link FlowFile}
@@ -143,11 +252,11 @@ public class TrapSNMP extends AbstractSNMPProcessor<SNMPTrapper> {
     private boolean addVariables(PDU pdu, Map<String, String> attributes) {
         boolean result = false;
         for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
-            if (attributeEntry.getKey().startsWith(SNMPUtils.SNMP_PROP_PREFIX)) {
-                String[] splits = attributeEntry.getKey().split("\\" + SNMPUtils.SNMP_PROP_DELIMITER);
+            if (attributeEntry.getKey().startsWith("snmp$")) {
+                String[] splits = attributeEntry.getKey().split("\\" + "$");
                 String snmpPropName = splits[1];
                 String snmpPropValue = attributeEntry.getValue();
-                if(SNMPUtils.OID_PATTERN.matcher(snmpPropName).matches()) {
+                if(OID_PATTERN.matcher(snmpPropName).matches()) {
                     Variable var = null;
                     if (splits.length == 2) { // no SMI syntax defined
                         var = new OctetString(snmpPropValue);
@@ -211,9 +320,9 @@ public class TrapSNMP extends AbstractSNMPProcessor<SNMPTrapper> {
     /**
      * @see org.apache.nifi.snmp.processors.AbstractSNMPProcessor#finishBuildingTargetResource(org.apache.nifi.processor.ProcessContext)
      */
-    @Override
+    /*@Override
     protected SNMPTrapper finishBuildingTargetResource(ProcessContext context) {
         String oid = context.getProperty(OID).getValue();
         return new SNMPTrapper(this.snmp, this.snmpTarget, new OID(oid));
-    }
+    }*/
 }
