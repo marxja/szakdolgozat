@@ -33,15 +33,6 @@ public class SleepProcessor extends AbstractProcessor {
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
-    public static final String MATCH_ATTR = "match";
-
-    /*public static final PropertyDescriptor Sleep_time = new PropertyDescriptor.Builder()
-            .name("Sleep time")
-            .defaultValue("5")
-            .required(true)
-            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-            .build();
-    */
 
     public static final Relationship SUCCESS = new Relationship.Builder()
             .name("SUCCESS")
@@ -62,7 +53,6 @@ public class SleepProcessor extends AbstractProcessor {
     @Override
     public void init(final ProcessorInitializationContext context){
         List<PropertyDescriptor> properties = new ArrayList<>();
-//        properties.add(Sleep_time);
         this.properties = Collections.unmodifiableList(properties);
 
         Set<Relationship> relationships = new HashSet<>();
