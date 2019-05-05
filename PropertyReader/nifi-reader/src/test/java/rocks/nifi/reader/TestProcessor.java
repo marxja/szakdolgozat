@@ -45,7 +45,7 @@ public class TestProcessor extends AbstractProcessor {
             .displayName("Record Reader")
             .description("Specifies the Controller Service to use for reading incoming data")
             .identifiesControllerService(RecordReaderFactory.class)
-            .required(false)
+            .required(true)
             .build();
 
     static final Relationship SUCCESS = new Relationship.Builder()
@@ -64,7 +64,7 @@ public class TestProcessor extends AbstractProcessor {
         if (flowFile == null) {
             return;
         }
-        /*try {
+        try {
             final RecordReaderFactory readerFactory = context.getProperty(RECORD_READER).asControllerService(RecordReaderFactory.class);
 
             final Map<String, String> originalAttributes = flowFile.getAttributes();
@@ -83,12 +83,12 @@ public class TestProcessor extends AbstractProcessor {
                 for(String fieldName : fieldNames) {
                     split = session.putAttribute(split, fieldName, elem.getAsString(fieldName));
                 }
-*/
-                session.transfer(flowFile, SUCCESS);
-/*            }
+
+                session.transfer(split, SUCCESS);
+            }
         } catch(Exception e) {
             session.transfer(flowFile, FAILURE);
-        }*/
+        }
     }
 
     @Override

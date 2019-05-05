@@ -40,17 +40,17 @@ import static org.apache.nifi.schema.access.SchemaAccessUtils.SCHEMA_TEXT_PROPER
 public class TestStandardMyService {
 
     TestRunner testRunner;
-    //PropertiesReader service;
+    PropertiesReader service;
 
     @Before
     public void init() {
         testRunner = TestRunners.newTestRunner(TestProcessor.class);
-        //service = new PropertiesReader();
+        service = new PropertiesReader();
     }
 
     @Test
     public void testService() throws InitializationException {
-/*        testRunner.addControllerService("test", service);
+        testRunner.addControllerService("test", service);
         testRunner.setProperty(service, SchemaAccessUtils.SCHEMA_ACCESS_STRATEGY, SchemaAccessUtils.SCHEMA_TEXT_PROPERTY);
         testRunner.setProperty(service, SchemaAccessUtils.SCHEMA_TEXT, "{\n" +
                 "  \"name\": \"recordFormatName\",\n" +
@@ -67,14 +67,14 @@ public class TestStandardMyService {
 
         // configure the processor and link it with the service
         testRunner.setProperty(TestProcessor.RECORD_READER, "test");
-*/        testRunner.assertValid();
+        testRunner.assertValid();
 
         testRunner.enqueue("index = 12\n" +
                 "elem = 345");
 
 
         testRunner.run();
-/*
+
         testRunner.assertAllFlowFilesTransferred(SUCCESS, 2);
 
         List<MockFlowFile> firstTest = testRunner.getFlowFilesForRelationship(SUCCESS);
@@ -85,7 +85,7 @@ public class TestStandardMyService {
         firstTest.get(1).assertAttributeEquals("key", "elem");
         firstTest.get(1).assertAttributeEquals("value", "345");
 
-        /*
+        
         testRunner.clearTransferState();
 
         testRunner.disableControllerService(service);
@@ -137,7 +137,7 @@ public class TestStandardMyService {
         testRunner.run();
 
         testRunner.assertAllFlowFilesTransferred(FAILURE, 1);
-        */
+        
     }
 
 }
