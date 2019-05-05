@@ -115,7 +115,7 @@ public class SplitYaml extends AbstractProcessor {
 
 
     @Override
-    protected void init(final ProcessorInitializationContext context) {
+    public void init(final ProcessorInitializationContext context) {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         this.properties = Collections.unmodifiableList(properties);
 
@@ -132,12 +132,8 @@ public class SplitYaml extends AbstractProcessor {
     }
 
     @Override
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return properties;
-    }
-
-    @OnScheduled
-    public void onScheduled(ProcessContext processContext) {
     }
 
     @Override
@@ -196,7 +192,7 @@ public class SplitYaml extends AbstractProcessor {
                     }
             );
             attributes.put(SEGMENT_ORIGINAL_FILENAME.key(), split.getAttribute(CoreAttributes.FILENAME.key()));
-            attributes.put(FRAGMENT_INDEX.key(), Integer.toString(i));
+            attributes.put(FRAGMENT_INDEX.key(), Integer.toString(i+1));
             processSession.transfer(processSession.putAllAttributes(split, attributes), REL_SPLIT);
         }
         original = copyAttributesToOriginal(processSession, original, fragmentId, resultList.size());
