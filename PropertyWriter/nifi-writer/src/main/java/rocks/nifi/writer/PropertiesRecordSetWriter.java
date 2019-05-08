@@ -43,23 +43,47 @@ import org.apache.nifi.logging.ComponentLog;
 @CapabilityDescription("Writes the contents of a RecordSet as Property data.")
 public class PropertiesRecordSetWriter extends DateTimeTextRecordSetWriter implements RecordSetWriterFactory {
 
+    public static final PropertyDescriptor FirstFieldName = new PropertyDescriptor.Builder()
+            .name("first-field-name")
+            .displayName("First FieldName")
+            .description("This is the fieldname which is use to determine the key value of the Property.")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("FirstField")
+            .build();
+
+    public static final PropertyDescriptor SecondFieldName = new PropertyDescriptor.Builder()
+            .name("second-field-name")
+            .displayName("Second FieldName")
+            .description("This is the fieldname which is use to determine the value of the Property.")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("SecondField")
+            .build();
+
+
+    String firstFieldName;
+    String secondFieldName;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> props = new ArrayList<>(super.getSupportedPropertyDescriptors());
-        return props;
+	props.add(FirstFieldName);
+	props.add(SecondFieldName);        
+	return props;
     }
 
 
     @OnEnabled
     public void storePropertiesFormat(final ConfigurationContext context) {
-
+        firstFieldName = context.getProperty(FirstFieldName).getValue();
+        secondFieldName = context.getProperty(SecondFieldName).getValue();
     }
 
     @Override
     public RecordSetWriter createWriter(final ComponentLog logger, final RecordSchema schema, final OutputStream out) throws SchemaNotFoundException {
         return new WritePropertiesResult(schema, getSchemaAccessWriter(schema), out,
-                getDateFormat().orElse(null), getTimeFormat().orElse(null), getTimestampFormat().orElse(null));
+                getDateFormat().orElse(null), getTimeFormat().orElse(null), getTimestampFormat().orElse(null), firstFieldName, secondFieldName);
     }
 
 }
