@@ -1,0 +1,25 @@
+// ------------------------------------------------------------------
+// Transitive dependencies of this project determined from the
+// maven pom organized by organization.
+// ------------------------------------------------------------------
+
+nifi-SNMP-nar
+
+
+From: 'an unknown organization'
+  - log4j  log4j:log4j:jar:1.2.9
+
+  - SNMP4J (http://www.snmp4j.org) org.snmp4j:snmp4j:jar:1.10.1
+    License: The Apache Software License, Version 2.0  (http://www.snmp4j.org/LICENSE-2_0.txt)
+
+From: 'Apache NiFi Project' (http://nifi.apache.org/)
+  - nifi-snmp-processors (http://nifi.apache.org/nifi-nar-bundles/nifi-snmp-bundle/nifi-snmp-processors) org.apache.nifi:nifi-snmp-processors:jar:1.9.2
+    License: Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+  - nifi-utils (http://nifi.apache.org/nifi-commons/nifi-utils) org.apache.nifi:nifi-utils:jar:1.9.2
+    License: Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+  - nifi-SNMP-processors (http://nifi.apache.org/nifi-nar-bundles/SNMPTrap/nifi-SNMP-processors) rocks.nifi:nifi-SNMP-processors:jar:1.0
+    License: Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+
+
+
+
