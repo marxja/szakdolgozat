@@ -3,15 +3,15 @@ SLF4J: Found binding in [jar:file:/home/marxj/.m2/repository/ch/qos/logback/logb
 SLF4J: Found binding in [jar:file:/home/marxj/.m2/repository/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
 SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
 SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelectorStaticBinder]
-19:25:16.879 [pool-3-thread-1] ERROR rocks.nifi.processors.SNMP.TrapSNMP - [TrapSNMP[id=df20d03b-e8c6-41ed-8ed3-297255c2ea40]] Unsupported conversion of [Vinicius] to Integer32
+14:14:15.074 [pool-3-thread-1] ERROR rocks.nifi.processors.SNMP.TrapSNMP - [TrapSNMP[id=5ca069ae-639d-4d41-8a17-bc730d32671f]] Unsupported conversion of [Vinicius] to Integer32
 java.lang.NumberFormatException: For input string: "Vinicius"
 	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
 	at java.lang.Integer.parseInt(Integer.java:580)
 	at java.lang.Integer.parseInt(Integer.java:615)
 	at org.snmp4j.smi.Integer32.setValue(Integer32.java:108)
-	at rocks.nifi.processors.SNMP.TrapSNMP.stringToVariable(TrapSNMP.java:421)
-	at rocks.nifi.processors.SNMP.TrapSNMP.addVariables(TrapSNMP.java:403)
-	at rocks.nifi.processors.SNMP.TrapSNMP.onTrigger(TrapSNMP.java:337)
+	at rocks.nifi.processors.SNMP.TrapSNMP.stringToVariable(TrapSNMP.java:424)
+	at rocks.nifi.processors.SNMP.TrapSNMP.addVariables(TrapSNMP.java:406)
+	at rocks.nifi.processors.SNMP.TrapSNMP.onTrigger(TrapSNMP.java:321)
 	at org.apache.nifi.processor.AbstractProcessor.onTrigger(AbstractProcessor.java:27)
 	at org.apache.nifi.util.StandardProcessorTestRunner$RunProcessor.call(StandardProcessorTestRunner.java:255)
 	at org.apache.nifi.util.StandardProcessorTestRunner$RunProcessor.call(StandardProcessorTestRunner.java:249)
@@ -21,15 +21,15 @@ java.lang.NumberFormatException: For input string: "Vinicius"
 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
-19:25:16.884 [pool-3-thread-1] ERROR rocks.nifi.processors.SNMP.TrapSNMP - 
+14:14:15.079 [pool-3-thread-1] ERROR rocks.nifi.processors.SNMP.TrapSNMP - 
 java.lang.NumberFormatException: For input string: "Vinicius"
 	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
 	at java.lang.Integer.parseInt(Integer.java:580)
 	at java.lang.Integer.parseInt(Integer.java:615)
 	at org.snmp4j.smi.Integer32.setValue(Integer32.java:108)
-	at rocks.nifi.processors.SNMP.TrapSNMP.stringToVariable(TrapSNMP.java:421)
-	at rocks.nifi.processors.SNMP.TrapSNMP.addVariables(TrapSNMP.java:403)
-	at rocks.nifi.processors.SNMP.TrapSNMP.onTrigger(TrapSNMP.java:337)
+	at rocks.nifi.processors.SNMP.TrapSNMP.stringToVariable(TrapSNMP.java:424)
+	at rocks.nifi.processors.SNMP.TrapSNMP.addVariables(TrapSNMP.java:406)
+	at rocks.nifi.processors.SNMP.TrapSNMP.onTrigger(TrapSNMP.java:321)
 	at org.apache.nifi.processor.AbstractProcessor.onTrigger(AbstractProcessor.java:27)
 	at org.apache.nifi.util.StandardProcessorTestRunner$RunProcessor.call(StandardProcessorTestRunner.java:255)
 	at org.apache.nifi.util.StandardProcessorTestRunner$RunProcessor.call(StandardProcessorTestRunner.java:249)
@@ -39,5 +39,5 @@ java.lang.NumberFormatException: For input string: "Vinicius"
 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
-19:25:16.884 [pool-3-thread-1] WARN rocks.nifi.processors.SNMP.TrapSNMP - TrapSNMP[id=df20d03b-e8c6-41ed-8ed3-297255c2ea40] No attributes found in the FlowFile to perform SNMP Trap
-19:25:16.887 [pool-4-thread-1] WARN rocks.nifi.processors.SNMP.TrapSNMP - TrapSNMP[id=df20d03b-e8c6-41ed-8ed3-297255c2ea40] No attributes found in the FlowFile to perform SNMP Trap
+14:14:15.079 [pool-3-thread-1] WARN rocks.nifi.processors.SNMP.TrapSNMP - TrapSNMP[id=5ca069ae-639d-4d41-8a17-bc730d32671f] No attributes found in the FlowFile to perform SNMP Trap
+14:14:15.083 [pool-4-thread-1] WARN rocks.nifi.processors.SNMP.TrapSNMP - TrapSNMP[id=5ca069ae-639d-4d41-8a17-bc730d32671f] No attributes found in the FlowFile to perform SNMP Trap

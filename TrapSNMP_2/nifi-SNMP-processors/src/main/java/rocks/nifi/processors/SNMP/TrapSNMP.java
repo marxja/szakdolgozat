@@ -136,7 +136,8 @@ public class TrapSNMP extends AbstractProcessor {
             .name("snmp-security-name")
             .displayName("SNMP Security name / user name")
             .description("Security name used for SNMP exchanges")
-            .required(false)
+            .required(true)
+            .defaultValue("username")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -281,8 +282,10 @@ public class TrapSNMP extends AbstractProcessor {
 				  
 				USM usm = new USM(SecurityProtocols.getInstance(),
 					new OctetString(MPv3.createLocalEngineID()), 0);
+				SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES128());
 				SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES192());
 				SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES256());
+				SecurityProtocols.getInstance().addPrivacyProtocol(new PrivDES());
 				SecurityProtocols.getInstance().addPrivacyProtocol(new Priv3DES());
 				SecurityModels.getInstance().addSecurityModel(usm);    
 				  
@@ -440,7 +443,7 @@ public class TrapSNMP extends AbstractProcessor {
         return propertyDescriptors;
     }
 
-	public static OID getPriv(String privProtocol) {
+	private static OID getPriv(String privProtocol) {
         switch (privProtocol) {
         case "DES":
             return PrivDES.ID;
@@ -458,7 +461,7 @@ public class TrapSNMP extends AbstractProcessor {
     }
 
 
-    public static OID getAuth(String authProtocol) {
+    private static OID getAuth(String authProtocol) {
         switch (authProtocol) {
         case "SHA":
             return AuthSHA.ID;
@@ -470,7 +473,7 @@ public class TrapSNMP extends AbstractProcessor {
     }
     
     
-    public static int getSecLevel(String level) {
+    private static int getSecLevel(String level) {
         switch (level) {
         case "noAuthNoPriv":
             return SecurityLevel.NOAUTH_NOPRIV;

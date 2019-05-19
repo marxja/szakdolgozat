@@ -49,6 +49,10 @@ public class TrapSNMPTest {
 		
 		testRunner.clearTransferState();
 		
+		testRunner.setProperty(TrapSNMP.SNMP_VERSION, "SNMPv3");
+		testRunner.setProperty(TrapSNMP.SNMP_SECURITY_LEVEL, "noAuthNoPriv");
+		testRunner.setProperty(TrapSNMP.SNMP_SECURITY_NAME, "username");
+		
 		attributesGood.put("snmp$1.3.6.1.2.1.1.4.0$2", "123");
 		testRunner.enqueue("", attributesGood);
 
